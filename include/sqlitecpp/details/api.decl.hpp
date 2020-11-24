@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <iterator>
 
 #include "sqlite3.h"
@@ -64,5 +65,9 @@ namespace sqlite {
   // Outputs results into output iterator which must have value_type of row tuple
   template <typename ValuesTuple, std::output_iterator<ValuesTuple> OutputIterator, typename... Args>
   void exec_into(sqlite3* db, const std::string& query, OutputIterator output_iterator, Args&&...args);
+
+  template <typename ValuesTuple, typename... Args>
+  void exec_and_accept(sqlite3* db, const std::string& query,
+                       const std::function<void(ValuesTuple&&)>& acceptor, Args&&...args);
 
 }

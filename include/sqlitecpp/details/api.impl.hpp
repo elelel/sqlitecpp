@@ -208,4 +208,23 @@ inline void sqlite::exec_into(sqlite3* db, const std::string& query, OutputItera
   }
 }
 
+template <typename ValuesTuple, typename... Args>
+inline void sqlite::exec_and_accept(sqlite3* db, const std::string& query,
+                                    const std::function<void(ValuesTuple&&)>& acceptor, Args&&...args) {
+  sqlite3_stmt* stmt = nullptr;
+  try {
+    stmt = prepare(db, query);
+    if constexpr (sizeof...(Args) > 0) bind(stmt, std::forward<Args>(args)...);
+    auto step_rslt = step(stmt);
+    while (step_rslt == SQLITE_ROW) {
+      acceptor(std::move(columns_as_tuple<ValuesTuple>(stmt)));
+      step_rslt = step(stmt);
+    }
+    finalize(db, stmt);
+    stmt = nullptr;
+  } catch (...) {
+    if (stmt != nullptr) try { finalize(db, stmt); } catch (...) {};
+    throw;
+  }
+}
 
