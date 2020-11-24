@@ -191,7 +191,6 @@ inline std::optional<ValuesTuple> sqlite::exec_for_single(sqlite3* db, const std
 
 template <typename ValuesTuple, std::output_iterator<ValuesTuple> OutputIterator, typename... Args>
 inline void sqlite::exec_into(sqlite3* db, const std::string& query, OutputIterator output_iterator, Args&&...args) {
-  std::optional<ValuesTuple> result;
   sqlite3_stmt* stmt = nullptr;
   try {
     stmt = prepare(db, query);
@@ -207,7 +206,6 @@ inline void sqlite::exec_into(sqlite3* db, const std::string& query, OutputItera
     if (stmt != nullptr) try { finalize(db, stmt); } catch (...) {};
     throw;
   }
-  return result;
 }
 
 
