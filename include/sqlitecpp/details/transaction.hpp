@@ -1,10 +1,12 @@
 #pragma once
 
-#include "driver.decl.hpp"
+#include "api.decl.hpp"
 
 #include <functional>
 
 namespace sqlite {
+  // Execute std::function in a sqlite transaction
+  
   template <typename Result>
   struct transaction {
     inline transaction(sqlite3* db, std::function<Result()> f) :
@@ -14,15 +16,15 @@ namespace sqlite {
 
     inline ~transaction() {
       if (need_close_) {
-        try { driver::transaction_rollback(db_); } catch (...) {}              
+        try { transaction_rollback(db_); } catch (...) {}              
       }
     }
           
     inline Result operator*() {
-      driver::transaction_begin(db_);
+      transaction_begin(db_);
       need_close_ = true;
       Result result = f_();
-      driver::transaction_commit(db_);
+      transaction_commit(db_);
       need_close_ = false;
       return result;
     }
@@ -39,12 +41,12 @@ namespace sqlite {
       f_(f) {} ;
 
     inline void operator*() const {
-      driver::transaction_begin(db_);
+      transaction_begin(db_);
       try {
         f_();
-        driver::transaction_commit(db_);
+        transaction_commit(db_);
       } catch (...) {
-        try { driver::transaction_rollback(db_); } catch (...) {}
+        try { transaction_rollback(db_); } catch (...) {}
         throw;
       }
     }

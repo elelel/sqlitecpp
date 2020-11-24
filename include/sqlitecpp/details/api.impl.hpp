@@ -1,11 +1,10 @@
 #pragma once
 
-#include "api.hpp"
+#include "api.impl.hpp"
 
-#include "exception.hpp"
-#include "exception.cpp"
+#include "exception.decl.hpp"
 
-sqlite3* sqlite::open(const char* filename) {
+inline sqlite3* sqlite::open(const char* filename) {
   sqlite3* db;
   auto sqlite_err = sqlite3_open(filename, &db);
   if (((sqlite_err & 0xff) != SQLITE_OK) || (db == nullptr)) {
@@ -22,7 +21,7 @@ sqlite3* sqlite::open(const char* filename) {
   return db;
 }
 
-sqlite3_stmt* sqlite::prepare(sqlite3* db, const char* query, const int query_sz) {
+inline sqlite3_stmt* sqlite::prepare(sqlite3* db, const char* query, const int query_sz) {
   sqlite3_stmt* stmt = nullptr;
   auto sqlite_err = sqlite3_prepare_v2(db, query, query_sz, &stmt, nullptr);
   if (((sqlite_err & 0xff) != SQLITE_OK) || (stmt == nullptr)) {
@@ -33,30 +32,30 @@ sqlite3_stmt* sqlite::prepare(sqlite3* db, const char* query, const int query_sz
   return stmt;
 }
 
-sqlite3_stmt* sqlite::prepare(sqlite3* db, const std::string& query) {
+inline sqlite3_stmt* sqlite::prepare(sqlite3* db, const std::string& query) {
   return prepare(db, query.c_str(), query.size() + 1);
 }
 
 template <int I, sqlite::mapped_type Arg>
-int sqlite::bind(sqlite3_stmt* stmt, Arg&& arg) {
+inline int sqlite::bind(sqlite3_stmt* stmt, Arg&& arg) {
   using dispatch_type = typename std::decay<Arg>::type;
   return type_policy<dispatch_type>::bind(stmt, I, std::forward<Arg>(arg));
 }
         
 template <int I, sqlite::mapped_type Arg, sqlite::mapped_type... Args>
-int sqlite::bind(sqlite3_stmt* stmt, Arg&& arg, Args&&... args) {
+inline int sqlite::bind(sqlite3_stmt* stmt, Arg&& arg, Args&&... args) {
   using dispatch_type = typename std::decay<Arg>::type;
   type_policy<dispatch_type>::bind(stmt, I, std::forward<Arg>(arg));
   return bind<I + 1>(stmt, std::forward<Args>(args)...);
 }
 
 template <sqlite::mapped_type Arg>
-int sqlite::bind_at(sqlite3_stmt* stmt, int i, const Arg& arg) {
+inline int sqlite::bind_at(sqlite3_stmt* stmt, int i, const Arg& arg) {
   using dispatch_type = typename std::decay<Arg>::type;
   return type_policy<dispatch_type>::bind(stmt, i, arg);
 }
 
-int sqlite::step(sqlite3_stmt* stmt) {
+inline int sqlite::step(sqlite3_stmt* stmt) {
   auto sqlite_err = sqlite3_step(stmt);
   if (((sqlite_err &0xff) != SQLITE_ROW) && ((sqlite_err &0xff) != SQLITE_DONE)) {
     auto db = sqlite3_db_handle(stmt);
@@ -70,38 +69,27 @@ int sqlite::step(sqlite3_stmt* stmt) {
   return sqlite_err;
 }
 
-int sqlite::finalize(sqlite3_stmt** stmt) {
-  auto sqlite_err = sqlite3_finalize(*stmt) & 0xff;
+inline int sqlite::finalize(sqlite3* db, sqlite3_stmt* stmt) {
+  auto sqlite_err = sqlite3_finalize(stmt) & 0xff;
   if ((sqlite_err & 0xff) == SQLITE_OK) {
-    *stmt = nullptr;
     return sqlite_err;
   }
   throw exception(db, "Finalize failed", sqlite_err);
 }
 
-int sqlite::finalize(sqlite3_stmt* stmt) {
-  return sqlite3_finalize(stmt);
-}
-
-
-int sqlite::close(sqlite3** db) {
-  auto sqlite_err = sqlite3_close(*db) & 0xff;
+inline int sqlite::close(sqlite3* db) {
+  auto sqlite_err = sqlite3_close(db) & 0xff;
   if ((sqlite_err & 0xff) == SQLITE_OK) {
-    *db = nullptr;
     return sqlite_err;
   }
-  throw exception(db, "Finalize failed", sqlite_err);
+  throw exception(db, "Close failed", sqlite_err);
 }
 
-int sqlite::close(sqlite3* db) {
-  return sqlite3_close(db);
-}
-
-int sqlite::changes(sqlite3* db) {
+inline int sqlite::changes(sqlite3* db) {
   return sqlite3_changes(db);
 }
 
-int64_t sqlite::last_insert_id(sqlite3* db) {
+inline int64_t sqlite::last_insert_id(sqlite3* db) {
   if (changes(db) != 0) {
     auto id = sqlite3_last_insert_rowid(db);
     if (id == 0) {
@@ -113,39 +101,39 @@ int64_t sqlite::last_insert_id(sqlite3* db) {
   }
 }
 
-int sqlite::transaction_begin(sqlite3* db) {
+inline int sqlite::transaction_begin(sqlite3* db) {
   auto sqlite_err = sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
   if (sqlite_err != SQLITE_OK) throw exception(db, "Can't begin transaction", sqlite_err);
   return sqlite_err;
 }
 
-int sqlite::transaction_commit(sqlite3* db) {
+inline int sqlite::transaction_commit(sqlite3* db) {
   auto sqlite_err = sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
   if (sqlite_err != SQLITE_OK) throw exception(db, "Can't commit transaction", sqlite_err);
   return sqlite_err;
 }
 
-int sqlite::transaction_rollback(sqlite3* db) {
+inline int sqlite::transaction_rollback(sqlite3* db) {
   auto sqlite_err = sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
   if (sqlite_err != SQLITE_OK) throw exception(db, "Can't commit transaction", sqlite_err);
   return sqlite_err;
 }
 
 template <std::size_t I, typename Arg>
-void sqlite::columns_to(sqlite3_stmt* stmt, Arg& arg) {
+inline void sqlite::columns_to(sqlite3_stmt* stmt, Arg& arg) {
   using T = std::decay_t<decltype(arg)>;
   arg = column<T>(stmt, I);
 }
 
 template <std::size_t I, typename Arg, typename... Args>
-void sqlite::columns_to(sqlite3_stmt* stmt, Arg& arg, Args&&... args) {
+inline void sqlite::columns_to(sqlite3_stmt* stmt, Arg& arg, Args&&... args) {
   using T = std::decay_t<decltype(arg)>;
   arg = column<T>(stmt, I);
   columns_to<I+1>(stmt, std::forward<Args>(args)...);
 }
 
 template <typename ValuesTuple, std::size_t I>
-auto sqlite::columns_as_tuple(sqlite3_stmt* stmt) {
+inline auto sqlite::columns_as_tuple(sqlite3_stmt* stmt) {
   if constexpr (I < std::tuple_size<ValuesTuple>::value - 1) {
     using T = std::tuple_element_t<I, ValuesTuple>;
     return std::tuple_cat(std::tuple(column<T>(stmt, I)), columns_as_tuple<ValuesTuple, I + 1>(stmt));
@@ -156,28 +144,28 @@ auto sqlite::columns_as_tuple(sqlite3_stmt* stmt) {
 }
 
 template <typename... Args>
-void sqlite::exec(sqlite3* db, const std::string& query, Args&&... args) {
+inline void sqlite::exec(sqlite3* db, const std::string& query, Args&&... args) {
   sqlite3_stmt* stmt = nullptr;  
   try {
     stmt = prepare(db, query);
     if constexpr (sizeof...(Args) > 0) bind(stmt, std::forward<Args>(args)...);
     step(stmt);
-    finalize(&stmt);
+    finalize(db, stmt);
+    stmt = nullptr;
   } catch (exception& e) {
-    if (stmt != nullptr) finalize(&stmt);
+    if (stmt != nullptr) try { finalize(db, stmt); } catch (...) {};
     throw;
   }
 }
 
 template <typename... Args>
-int sqlite::exec_for_changes(sqlite3* db, const std::string& query, Args&&... args) {
-  sqlite3_stmt* stmt = nullptr;
-  exec(std::forward<Args>(args)...);
+inline int sqlite::exec_for_changes(sqlite3* db, const std::string& query, Args&&... args) {
+  exec(db, query, std::forward<Args>(args)...);
   return changes(db);
 }
 
 template <typename ValuesTuple, typename... Args>
-std::optional<ValuesTuple> sqlite::exec_for_single(sqlite3* db, const std::string& query, Args&&...args) {
+inline std::optional<ValuesTuple> sqlite::exec_for_single(sqlite3* db, const std::string& query, Args&&...args) {
   std::optional<ValuesTuple> result;
   sqlite3_stmt* stmt = nullptr;
   try {
@@ -190,16 +178,17 @@ std::optional<ValuesTuple> sqlite::exec_for_single(sqlite3* db, const std::strin
       } else throw exception("Can't execute for single row, more than one rows in result");
       step_rslt = step(stmt);
     }
-    finalize(&stmt);
+    finalize(db, stmt);
+    stmt = nullptr;
   } catch (...) {
-    if (stmt != nullptr) finalize(&stmt);
+    if (stmt != nullptr) try { finalize(db, stmt); } catch (...) {};
     throw;
   }
   return result;
 }
 
-template <typename ValuesTuple, std::output_iterator OutputIterator, typename... Args>
-inline std::optional<ValuesTuple> sqlite::exec_into(sqlite3* db, const std::string& query, OutputIterator output_iterator, Args&&...args) {
+template <typename ValuesTuple, std::output_iterator<ValuesTuple> OutputIterator, typename... Args>
+inline void sqlite::exec_into(sqlite3* db, const std::string& query, OutputIterator output_iterator, Args&&...args) {
   std::optional<ValuesTuple> result;
   sqlite3_stmt* stmt = nullptr;
   try {
@@ -207,12 +196,13 @@ inline std::optional<ValuesTuple> sqlite::exec_into(sqlite3* db, const std::stri
     if constexpr (sizeof...(Args) > 0) bind(stmt, std::forward<Args>(args)...);
     auto step_rslt = step(stmt);
     while (step_rslt == SQLITE_ROW) {
-      *output_iterator++ = std::move(columns_as_tuple<typename output_iterator::value_type>(stmt));
+      *output_iterator++ = std::move(columns_as_tuple<typename OutputIterator::value_type>(stmt));
       step_rslt = step(stmt);
     }
-    finalize(&stmt);
+    finalize(db, stmt);
+    stmt = nullptr;
   } catch (...) {
-    if (stmt != nullptr) finalize(&stmt);
+    if (stmt != nullptr) try { finalize(db, stmt); } catch (...) {};
     throw;
   }
   return result;
