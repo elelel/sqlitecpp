@@ -1,0 +1,6 @@
+#pragma once
+
+#include "common.decl.hpp"
+#include "time_point_int.decl.hpp"
+#include "common.impl.hpp"
+#include "time_point_int.impl.hpp"

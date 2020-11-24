@@ -1,0 +1,6 @@
+#pragma once
+
+#include "common.decl.hpp"
+#include "string.decl.hpp"
+#include "common.impl.hpp"
+#include "string.impl.hpp"

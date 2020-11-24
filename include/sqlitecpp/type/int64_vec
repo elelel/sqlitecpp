@@ -1,0 +1,6 @@
+#pragma once
+
+#include "common.decl.hpp"
+#include "int64_vec.decl.hpp"
+#include "common.impl.hpp"
+#include "int64_vec.impl.hpp"

@@ -1,0 +1,6 @@
+#pragma once
+
+#include "common.decl.hpp"
+#include "bool_int.decl.hpp"
+#include "common.impl.hpp"
+#include "bool_int.impl.hpp"
