@@ -197,7 +197,7 @@ inline void sqlite::exec_into(sqlite3* db, const std::string& query, OutputItera
     if constexpr (sizeof...(Args) > 0) bind(stmt, std::forward<Args>(args)...);
     auto step_rslt = step(stmt);
     while (step_rslt == SQLITE_ROW) {
-      *output_iterator++ = std::move(columns_as_tuple<typename OutputIterator::value_type>(stmt));
+      *output_iterator++ = std::move(columns_as_tuple<ValuesTuple>(stmt));
       step_rslt = step(stmt);
     }
     finalize(db, stmt);
