@@ -5,7 +5,7 @@
 #include "common.impl.hpp"
 
 template <typename Value>
-inline int sqlsuite::sqlite::driver::type_policy<std::vector<int64_t>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
+inline int sqlite::type_policy<std::vector<int64_t>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
   auto sqlite_err = sqlite3_bind_blob64(stmt, i, value.data(), SQLITE_TRANSIENT);
   if ((sqlite_err & 0xff) == SQLITE_OK) return sqlite_err; else {
     auto db = sqlite3_db_handle(stmt);
@@ -15,7 +15,7 @@ inline int sqlsuite::sqlite::driver::type_policy<std::vector<int64_t>>::bind(sql
   }
 }
 
-inline std::vector<int64_t> sqlsuite::sqlite::driver::type_policy<std::vector<int64_t>>::column(sqlite3_stmt* stmt, const int i) {
+inline std::vector<int64_t> sqlite::type_policy<std::vector<int64_t>>::column(sqlite3_stmt* stmt, const int i) {
   auto column_type = sqlite3_column_type(stmt, i);
   if (column_type != SQLITE_BLOB) {
     const auto msg = "Can't get int column " + std::to_string(i) + ", column type is " + std::to_string(column_type) + " instead of SQLITE_BLOB";
@@ -49,10 +49,10 @@ inline std::vector<int64_t> sqlsuite::sqlite::driver::type_policy<std::vector<in
 }
 
 template <typename Value>
-inline int sqlsuite::sqlite::driver::type_policy<std::optional<std::vector<int64_t>>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
+inline int sqlite::type_policy<std::optional<std::vector<int64_t>>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
   return bind_optional(stmt, i, std::forward<Value>(value));
 }
 
-inline std::optional<std::vector<int64_t>> sqlsuite::sqlite::driver::type_policy<std::optional<std::vector<int64_t>>>::column(sqlite3_stmt* stmt, const int i) {
+inline std::optional<std::vector<int64_t>> sqlite::type_policy<std::optional<std::vector<int64_t>>>::column(sqlite3_stmt* stmt, const int i) {
   return column_optional<std::vector<int64_t>>(stmt, i);
 }

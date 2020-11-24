@@ -5,19 +5,19 @@
 #include <cstring>
 #include <stdio.h>
 
-sqlsuite::sqlite::driver::exception::exception() noexcept :
+sqlite::exception::exception() noexcept :
   exception(nullptr, nullptr, SQLITE_ERROR) {
 }
 
-sqlsuite::sqlite::driver::exception::exception(const char* msg) noexcept :
+sqlite::exception::exception(const char* msg) noexcept :
   exception(nullptr, msg, SQLITE_ERROR) {
 }
 
-sqlsuite::sqlite::driver::exception::exception(const std::string& msg) noexcept :
+sqlite::exception::exception(const std::string& msg) noexcept :
   exception(nullptr, msg.c_str(), SQLITE_ERROR) {
 }
 
-sqlsuite::sqlite::driver::exception::exception(sqlite3* db, const char* msg, const int err_code) noexcept :
+sqlite::exception::exception(sqlite3* db, const char* msg, const int err_code) noexcept :
   err_code_(err_code) {
   if (msg != nullptr) {
     snprintf(msg_, sizeof(msg_), "%s", msg);
@@ -41,21 +41,21 @@ sqlsuite::sqlite::driver::exception::exception(sqlite3* db, const char* msg, con
   }
 }
 
-sqlsuite::sqlite::driver::exception::exception(const exception& other) noexcept :
+sqlite::exception::exception(const exception& other) noexcept :
   err_code_(other.err_code_),
   sqlite_err_msg_(other.sqlite_err_msg_) {
   memcpy(what_, other.what_, sizeof(what_));
 }
 
-const char* sqlsuite::sqlite::driver::exception::what() const noexcept {
+const char* sqlite::exception::what() const noexcept {
   return what_;
 }
 
-const char* sqlsuite::sqlite::driver::exception::msg() const noexcept {
+const char* sqlite::exception::msg() const noexcept {
   return msg_;
 }
 
-auto sqlsuite::sqlite::driver::exception::operator=(const exception& other) noexcept -> exception&
+auto sqlite::exception::operator=(const exception& other) noexcept -> exception&
   {
    err_code_ = other.err_code_;
    sqlite_err_msg_ = other.sqlite_err_msg_;
@@ -64,14 +64,14 @@ auto sqlsuite::sqlite::driver::exception::operator=(const exception& other) noex
 }
 
 
-int sqlsuite::sqlite::driver::exception::err_code() const noexcept {
+int sqlite::exception::err_code() const noexcept {
   return err_code_;
 }
 
-int sqlsuite::sqlite::driver::exception::primary_err_code() const noexcept {
+int sqlite::exception::primary_err_code() const noexcept {
   return err_code_ & 0xff;
 }
   
-const char* sqlsuite::sqlite::driver::exception::sqlite_err_msg() const noexcept {
+const char* sqlite::exception::sqlite_err_msg() const noexcept {
   return sqlite_err_msg_;
 }

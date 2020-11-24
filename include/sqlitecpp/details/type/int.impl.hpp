@@ -5,7 +5,7 @@
 #include "common.impl.hpp"
 
 template <typename Value>
-inline int sqlsuite::sqlite::driver::type_policy<int>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
+inline int sqlite::type_policy<int>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
   auto sqlite_err = sqlite3_bind_int(stmt, i, std::forward<Value>(value));
   if ((sqlite_err & 0xff) == SQLITE_OK) return sqlite_err; else {
     auto db = sqlite3_db_handle(stmt);
@@ -15,7 +15,7 @@ inline int sqlsuite::sqlite::driver::type_policy<int>::bind(sqlite3_stmt* stmt, 
   }
 }
 
-inline int sqlsuite::sqlite::driver::type_policy<int>::column(sqlite3_stmt* stmt, const int i) {
+inline int sqlite::type_policy<int>::column(sqlite3_stmt* stmt, const int i) {
   auto column_type = sqlite3_column_type(stmt, i);
   if (column_type != SQLITE_INTEGER) {
     const auto msg = "Can't get int column " + std::to_string(i) + ", column type is " +std::to_string(column_type) + " instead of SQLITE_INTEGER";
@@ -26,10 +26,10 @@ inline int sqlsuite::sqlite::driver::type_policy<int>::column(sqlite3_stmt* stmt
 }
 
 template <typename Value>
-inline int sqlsuite::sqlite::driver::type_policy<std::optional<int>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
+inline int sqlite::type_policy<std::optional<int>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
   return bind_optional(stmt, i, std::forward<Value>(value));
 }
 
-inline std::optional<int> sqlsuite::sqlite::driver::type_policy<std::optional<int>>::column(sqlite3_stmt* stmt, const int i) {
+inline std::optional<int> sqlite::type_policy<std::optional<int>>::column(sqlite3_stmt* stmt, const int i) {
   return column_optional<int>(stmt, i);
 }

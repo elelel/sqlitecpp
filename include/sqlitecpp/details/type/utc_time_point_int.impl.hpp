@@ -3,7 +3,7 @@
 #include "common.impl.hpp"
 
 template <typename Value>
-inline int sqlsuite::sqlite::driver::type_policy<std::chrono::time_point<std::chrono::seconds>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
+inline int sqlite::type_policy<std::chrono::time_point<std::chrono::seconds>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
   auto unix_time = std::chrono::duration_cast<std::chrono::seconds>(value.time_since_epoch()).count();
   auto sqlite_err = sqlite3_bind_int(stmt, i, unix_time);
   if ((sqlite_err & 0xff) == SQLITE_OK) return sqlite_err; else {
@@ -14,7 +14,7 @@ inline int sqlsuite::sqlite::driver::type_policy<std::chrono::time_point<std::ch
   }
 }
 
-inline auto sqlsuite::sqlite::driver::type_policy<std::chrono::time_point<std::chrono::seconds>>::column(sqlite3_stmt* stmt, const int i) -> time_point {
+inline auto sqlite::type_policy<std::chrono::time_point<std::chrono::seconds>>::column(sqlite3_stmt* stmt, const int i) -> time_point {
   auto column_type = sqlite3_column_type(stmt, i);
   if (column_type != SQLITE_INTEGER) {
     const auto msg = "Can't get time_point column " + std::to_string(i) + ", column type is " +std::to_string(column_type) + " instead of SQLITE_INTEGER";
@@ -25,11 +25,11 @@ inline auto sqlsuite::sqlite::driver::type_policy<std::chrono::time_point<std::c
 }
 
 template <typename Value>
-inline int sqlsuite::sqlite::driver::type_policy<std::optional<std::chrono::time_point<std::chrono::seconds>>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
+inline int sqlite::type_policy<std::optional<std::chrono::time_point<std::chrono::seconds>>>::bind(sqlite3_stmt* stmt, const int i, Value&& value) {
   return bind_optional(stmt, i, std::forward<Value>(value));
 }
   
-inline auto sqlsuite::sqlite::driver::type_policy<std::optional<std::chrono::time_point<std::chrono::seconds>>>::column(sqlite3_stmt* stmt, const int i) -> std::optional<time_point> {
+inline auto sqlite::type_policy<std::optional<std::chrono::time_point<std::chrono::seconds>>>::column(sqlite3_stmt* stmt, const int i) -> std::optional<time_point> {
   return column_optional<time_point>(stmt, i);
 }
 
