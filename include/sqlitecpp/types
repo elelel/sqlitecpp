@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sqlite"
+
 #include "type/int"
 #include "type/int64"
 #include "type/float"
