@@ -2,6 +2,8 @@
 
 #include "api.impl.hpp"
 
+#include <tuple>
+
 #include "exception.decl.hpp"
 
 inline sqlite3* sqlite::open(const char* filename) {
