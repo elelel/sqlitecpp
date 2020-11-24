@@ -1,12 +1,12 @@
 #pragma once
 
-#include "concepts.hpp"
+#include "details/concepts.hpp"
 
-#include "api.decl.hpp"
-#include "exception.decl.hpp"
+#include "details/api.decl.hpp"
+#include "details/exception.decl.hpp"
 
-#include "api.impl.hpp"
-#include "exception.impl.hpp"
-#include "transaction.hpp"
+#include "details/api.impl.hpp"
+#include "details/exception.impl.hpp"
+#include "details/transaction.hpp"
 
 
