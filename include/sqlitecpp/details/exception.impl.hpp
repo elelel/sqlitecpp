@@ -5,19 +5,19 @@
 #include <cstring>
 #include <stdio.h>
 
-sqlite::exception::exception() noexcept :
+inline sqlite::exception::exception() noexcept :
   exception(nullptr, nullptr, SQLITE_ERROR) {
 }
 
-sqlite::exception::exception(const char* msg) noexcept :
+inline sqlite::exception::exception(const char* msg) noexcept :
   exception(nullptr, msg, SQLITE_ERROR) {
 }
 
-sqlite::exception::exception(const std::string& msg) noexcept :
+inline sqlite::exception::exception(const std::string& msg) noexcept :
   exception(nullptr, msg.c_str(), SQLITE_ERROR) {
 }
 
-sqlite::exception::exception(sqlite3* db, const char* msg, const int err_code) noexcept :
+inline sqlite::exception::exception(sqlite3* db, const char* msg, const int err_code) noexcept :
   err_code_(err_code) {
   if (msg != nullptr) {
     snprintf(msg_, sizeof(msg_), "%s", msg);
@@ -41,21 +41,21 @@ sqlite::exception::exception(sqlite3* db, const char* msg, const int err_code) n
   }
 }
 
-sqlite::exception::exception(const exception& other) noexcept :
+inline sqlite::exception::exception(const exception& other) noexcept :
   err_code_(other.err_code_),
   sqlite_err_msg_(other.sqlite_err_msg_) {
   memcpy(what_, other.what_, sizeof(what_));
 }
 
-const char* sqlite::exception::what() const noexcept {
+inline const char* sqlite::exception::what() const noexcept {
   return what_;
 }
 
-const char* sqlite::exception::msg() const noexcept {
+inline const char* sqlite::exception::msg() const noexcept {
   return msg_;
 }
 
-auto sqlite::exception::operator=(const exception& other) noexcept -> exception&
+inline auto sqlite::exception::operator=(const exception& other) noexcept -> exception&
   {
    err_code_ = other.err_code_;
    sqlite_err_msg_ = other.sqlite_err_msg_;
@@ -63,15 +63,14 @@ auto sqlite::exception::operator=(const exception& other) noexcept -> exception&
    return *this;
 }
 
-
-int sqlite::exception::err_code() const noexcept {
+inline int sqlite::exception::err_code() const noexcept {
   return err_code_;
 }
 
-int sqlite::exception::primary_err_code() const noexcept {
+inline int sqlite::exception::primary_err_code() const noexcept {
   return err_code_ & 0xff;
 }
   
-const char* sqlite::exception::sqlite_err_msg() const noexcept {
+inline const char* sqlite::exception::sqlite_err_msg() const noexcept {
   return sqlite_err_msg_;
 }

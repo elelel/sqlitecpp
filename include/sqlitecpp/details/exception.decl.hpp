@@ -1,6 +1,7 @@
 #pragma once
 
 #include <exception>
+#include <string>
 
 #include "sqlite3.h"
 
