@@ -189,7 +189,7 @@ inline std::optional<ValuesTuple> sqlite::exec_for_single(sqlite3* db, const std
   return result;
 }
 
-template <typename ValuesTuple, std::output_iterator<ValuesTuple> OutputIterator, typename... Args>
+template <typename ValuesTuple, typename OutputIterator, typename... Args>
 inline void sqlite::exec_into(sqlite3* db, const std::string& query, OutputIterator output_iterator, Args&&...args) {
   sqlite3_stmt* stmt = nullptr;
   try {

@@ -63,7 +63,7 @@ namespace sqlite {
   std::optional<ValuesTuple> exec_for_single(sqlite3* db, const std::string& query, Args&&...args);
 
   // Outputs results into output iterator which must have value_type of row tuple
-  template <typename ValuesTuple, std::output_iterator<ValuesTuple> OutputIterator, typename... Args>
+  template <typename ValuesTuple, typename OutputIterator, typename... Args>
   void exec_into(sqlite3* db, const std::string& query, OutputIterator output_iterator, Args&&...args);
 
   template <typename ValuesTuple, typename... Args>
