@@ -38,23 +38,20 @@ inline sqlite3_stmt* sqlite::prepare(sqlite3* db, const std::string& query) {
   return prepare(db, query.c_str(), query.size() + 1);
 }
 
-template <int I, sqlite::mapped_type Arg>
+template <int I, typename Arg>
 inline int sqlite::bind(sqlite3_stmt* stmt, Arg&& arg) {
-  using dispatch_type = typename std::decay<Arg>::type;
-  return type_policy<dispatch_type>::bind(stmt, I, std::forward<Arg>(arg));
+  return type_policy<std::decay_t<Arg>>::bind(stmt, I, std::forward<Arg>(arg));
 }
         
-template <int I, sqlite::mapped_type Arg, sqlite::mapped_type... Args>
+template <int I, typename Arg, typename... Args>
 inline int sqlite::bind(sqlite3_stmt* stmt, Arg&& arg, Args&&... args) {
-  using dispatch_type = typename std::decay<Arg>::type;
-  type_policy<dispatch_type>::bind(stmt, I, std::forward<Arg>(arg));
+  type_policy<std::decay_t<Arg>>::bind(stmt, I, std::forward<Arg>(arg));
   return bind<I + 1>(stmt, std::forward<Args>(args)...);
 }
 
-template <sqlite::mapped_type Arg>
+template <typename Arg>
 inline int sqlite::bind_at(sqlite3_stmt* stmt, int i, const Arg& arg) {
-  using dispatch_type = typename std::decay<Arg>::type;
-  return type_policy<dispatch_type>::bind(stmt, i, arg);
+  return type_policy<std::decay_t<Arg>>::bind(stmt, i, arg);
 }
 
 inline int sqlite::step(sqlite3_stmt* stmt) {

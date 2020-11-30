@@ -14,13 +14,13 @@ namespace sqlite {
   sqlite3_stmt* prepare(sqlite3* db, const char* query, const int query_sz = -1);
   sqlite3_stmt* prepare(sqlite3* db, const std::string& query);
         
-  template <int I = 1, mapped_type Arg>
+  template <int I = 1, typename Arg>
   int bind(sqlite3_stmt* stmt, Arg&& arg);
         
-  template <int I = 1, mapped_type Arg, mapped_type... Args>
+  template <int I = 1, typename Arg, typename... Args>
   int bind(sqlite3_stmt* stmt, Arg&& arg, Args&&... args);
 
-  template <mapped_type Arg>
+  template <typename Arg>
   int bind_at(sqlite3_stmt* stmt, int i, const Arg& arg);
 
   template <std::size_t I = 0, typename Arg>
